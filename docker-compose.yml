@@ -1,0 +1,44 @@
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# GreenScan - Stack de développement local
+# PostgreSQL (obligatoire) + backend FastAPI + frontend React (optionnel ici)
+# ---------------------------------------------------------------------------
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: greenscan_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: greenscan
+      POSTGRES_PASSWORD: greenscan
+      POSTGRES_DB: greenscan
+    ports:
+      - "5432:5432"
+    volumes:
+      - greenscan_pgdata:/var/lib/postgresql/data
+      # Le schéma SQL est appliqué automatiquement au premier démarrage du volume.
+      - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenscan -d greenscan"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Backend optionnel en conteneur (sinon lancer en local avec uvicorn).
+  backend:
+    build: ./backend
+    container_name: greenscan_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://greenscan:greenscan@db:5432/greenscan
+    ports:
+      - "8000:8000"
+    profiles: ["full"]   # démarré uniquement avec: docker compose --profile full up
+
+volumes:
+  greenscan_pgdata:

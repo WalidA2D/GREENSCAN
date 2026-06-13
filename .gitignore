@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+
+# Environnement
+.env
+backend/.env
+
+# Modèles IA entraînés
+backend/ml/artifacts/*.joblib
+backend/ml/artifacts/*.json
+
+# Données générées
+backend/data/*.csv
+backend/data/*.parquet
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Fichiers temporaires d'inspection
+_inspect_excel.py
+_excel_dump.txt
