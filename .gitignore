@@ -34,3 +34,7 @@ Thumbs.db
 # Fichiers temporaires d'inspection
 _inspect_excel.py
 _excel_dump.txt
+
+# Logs de serveurs locaux
+backend/*server*.log
+frontend/*server*.log

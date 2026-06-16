@@ -93,14 +93,35 @@ export function ForecastChart({ history, forecast, height = 300 }) {
 
 // Nuage horaire des anomalies — points {hour, consumption_kwh}.
 export function AnomalyScatter({ data, height = 260 }) {
+  const hourly = Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    label: `${hour}h`,
+    max_kwh: 0,
+    count: 0,
+  }));
+
+  data.forEach((point) => {
+    const hour = Number(point.hour);
+    if (!Number.isInteger(hour) || hour < 0 || hour > 23) return;
+    hourly[hour].count += 1;
+    hourly[hour].max_kwh = Math.max(hourly[hour].max_kwh, Number(point.consumption_kwh) || 0);
+  });
+
+  const chartData = hourly.filter((point) => point.count > 0);
+
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ left: -18, right: 8 }}>
+      <BarChart data={chartData} margin={{ left: -18, right: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#eef2f6" vertical={false} />
-        <XAxis dataKey="hour" {...axis} label={{ value: "Heure", position: "insideBottom", offset: -2, fontSize: 11 }} />
+        <XAxis dataKey="label" {...axis} label={{ value: "Heure", position: "insideBottom", offset: -2, fontSize: 11 }} />
         <YAxis {...axis} />
-        <Tooltip formatter={(v) => `${fmt(v, 2)} kWh`} labelFormatter={(h) => `${h}h`} />
-        <Bar dataKey="consumption_kwh" name="Conso anormale" fill="#ef4444" radius={[6, 6, 0, 0]} />
+        <Tooltip
+          formatter={(v, name, props) => [
+            `${fmt(v, 2)} kWh (${props.payload.count} point${props.payload.count > 1 ? "s" : ""})`,
+            "Pic max anormal",
+          ]}
+        />
+        <Bar dataKey="max_kwh" name="Pic max anormal" fill="#ef4444" radius={[6, 6, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
